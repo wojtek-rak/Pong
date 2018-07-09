@@ -4,7 +4,11 @@ function startGame() {
     myGameArea.start();
     addEventListener('keydown', (event) => myGameArea.processKey(event));
     addEventListener('keyup', (event) => myGameArea.processKey(event));
-    myGamePiece = new component(30, 30, "red", 10, 120);
+    barLeft = new component(30, 100, "red", 10, 250);
+    barRight = new component(30, 100, "blue", 760, 250);
+    ball = new circle("green", 15);
+    ball.speedX = 3;
+    ball.speedY = 3;
 }
 
 var myGameArea = {
@@ -37,16 +41,46 @@ function component(width, height, color, x, y) {
     }
 }
 
+function circle(color, radius) {
+    this.radius = radius;
+    this.x = myGameArea.canvas.width / 2 - radius / 2;
+    this.y = myGameArea.canvas.height / 2 - radius / 2;
+    this.update = function(){
+        ctx = myGameArea.context;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        //ctx.lineWidth = 5;
+        //ctx.strokeStyle = '#003300';
+        ctx.arc(this.x,this.y,this.radius,0,2*Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
+}
+
 function updateGameArea() {
     myGameArea.clear();
-    myGamePiece.speedX = 0;
-    myGamePiece.speedY = 0;
-    if (myGameArea.keys[37]) {myGamePiece.x -= 1; }
+    //barLeft.speedX = 0;
+    //barLeft.speedY = 0;
+    //if (myGameArea.keys[37]) {barLeft.x -= 1; }
     // up arrow
-    if (myGameArea.keys[38]) {myGamePiece.y -= 1; }
+    if (myGameArea.keys[38]) {barRight.y -= 4; }
     // right arrow
-    if (myGameArea.keys[39]){myGamePiece.x += 1; }
+    //if (myGameArea.keys[39]){barLeft.x += 1; }
     // down arrow
-    if (myGameArea.keys[40]){myGamePiece.y += 1; }
-    myGamePiece.update();
+    if (myGameArea.keys[40]){barRight.y += 4; }
+    barRight.update();
+    if (myGameArea.keys[87]) {barLeft.y -= 4; }
+    if (myGameArea.keys[83]){barLeft.y += 4; }
+    barLeft.update();
+
+    if(ball.y > myGameArea.canvas.height - ball.radius) ball.speedY *= -1;
+    if(ball.y < 0 + ball.radius) ball.speedY *= -1;
+    if(ball.x > myGameArea.canvas.width - ball.radius) ball.speedX *= -1;
+    if(ball.x < 0 + ball.radius) ball.speedX *= -1;
+
+
+    ball.x += ball.speedX;
+    ball.y += ball.speedY;
+    ball.update();
 }
