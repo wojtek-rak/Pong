@@ -4,13 +4,15 @@ function startGame() {
     myGameArea.start();
     addEventListener('keydown', (event) => myGameArea.processKey(event));
     addEventListener('keyup', (event) => myGameArea.processKey(event));
+
     barLeft = new component(30, 100, "red", 10, 250);
     barRight = new component(30, 100, "blue", 760, 250);
-    ball = new circle("green", 15);
-    ball.speedX = 3;
-    ball.speedY = 3;
+    ball = new circle("green", 5);
+    //ball.speedX = 4;
+    //ball.speedY = 3;
 }
 
+//making game arena
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
@@ -29,6 +31,7 @@ var myGameArea = {
     }
 }
 
+//making bars
 function component(width, height, color, x, y) {
     this.width = width;
     this.height = height;
@@ -41,10 +44,13 @@ function component(width, height, color, x, y) {
     }
 }
 
+//making ball
 function circle(color, radius) {
     this.radius = radius;
     this.x = myGameArea.canvas.width / 2 - radius / 2;
     this.y = myGameArea.canvas.height / 2 - radius / 2;
+    this.speedX = 4;
+    this.speedY = 3;
     this.update = function(){
         ctx = myGameArea.context;
         ctx.fillStyle = color;
@@ -58,28 +64,47 @@ function circle(color, radius) {
     }
 }
 
+//main loop
 function updateGameArea() {
     myGameArea.clear();
-    //barLeft.speedX = 0;
-    //barLeft.speedY = 0;
     //if (myGameArea.keys[37]) {barLeft.x -= 1; }
-    // up arrow
+    // register up arrow
     if (myGameArea.keys[38]) {barRight.y -= 4; }
     // right arrow
     //if (myGameArea.keys[39]){barLeft.x += 1; }
-    // down arrow
+    // register down arrow
     if (myGameArea.keys[40]){barRight.y += 4; }
     barRight.update();
     if (myGameArea.keys[87]) {barLeft.y -= 4; }
     if (myGameArea.keys[83]){barLeft.y += 4; }
     barLeft.update();
 
-    if(ball.y > myGameArea.canvas.height - ball.radius) ball.speedY *= -1;
-    if(ball.y < 0 + ball.radius) ball.speedY *= -1;
-    if(ball.x > myGameArea.canvas.width - ball.radius) ball.speedX *= -1;
-    if(ball.x < 0 + ball.radius) ball.speedX *= -1;
+    //hitting the arena
+    if(ball.y > myGameArea.canvas.height - ball.radius) ball.speedY = Math.abs(ball.speedY) * (-1);
+    if(ball.y < 0 + ball.radius) ball.speedY = Math.abs(ball.speedY);
+    if(ball.x > myGameArea.canvas.width - ball.radius) ball.speedX = Math.abs(ball.speedX) * (-1);
+    if(ball.x < 0 + ball.radius) ball.speedX = Math.abs(ball.speedX);
 
+    //bouncing off top and bottom right bar
+    if(ball.x + ball.radius > barRight.x){
+        if(ball.y > barRight.y && ball.y < barRight.y + barRight.height && ball.x + ball.radius < barRight.x
+            + Math.abs(ball.speedX))  ball.speedX = Math.abs(ball.speedX) * (-1);
+        else if(ball.y + ball.radius > barRight.y && ball.y - ball.radius < barRight.y + barRight.height) {
+            if(ball.y < barRight.y + barRight.height / 2) ball.speedY = Math.abs(ball.speedY) * (-1);
+            if(ball.y > barRight.y + barRight.height / 2) ball.speedY = Math.abs(ball.speedY);
+        }
+    };
+    //bouncing off top and bottom left bar
+    if(ball.x - ball.radius < barLeft.x + barLeft.width){
+        if(ball.y > barLeft.y && ball.y < barLeft.y + barLeft.height && ball.x - ball.radius > barLeft.x +barLeft.width
+            - Math.abs(ball.speedX))  ball.speedX = Math.abs(ball.speedX);
+        else if(ball.y + ball.radius > barLeft.y && ball.y - ball.radius < barLeft.y + barLeft.height) {
+            if(ball.y < barLeft.y + barLeft.height / 2) ball.speedY = Math.abs(ball.speedY) * (-1);
+            if(ball.y > barLeft.y + barLeft.height / 2) ball.speedY = Math.abs(ball.speedY);
+        }
+    };
 
+    //change position of the ball
     ball.x += ball.speedX;
     ball.y += ball.speedY;
     ball.update();
