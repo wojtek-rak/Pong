@@ -1,6 +1,19 @@
 var myGamePiece;
 
+//const { Observable,Subject, ReplaySubject, from, of, range } = rxjs;
+//const { map, filter, switchMap } = rxjs.operators;
+//var Rx = require('rx');
+//import * as Rx from 'rxjs';
+//import { Observable } from 'rxjs';
+
+//Rx.Observable.fromEvent(window, 'mousemove').subscribe(event => console.log(event.clientX, event.clientY));
+
+var barLeft;
+var barRight;
+var ball;
+
 function startGame() {
+
     myGameArea.start();
     addEventListener('keydown', (event) => myGameArea.processKey(event));
     addEventListener('keyup', (event) => myGameArea.processKey(event));
@@ -8,6 +21,10 @@ function startGame() {
     barLeft = new component(30, 100, "red", 10, 250);
     barRight = new component(30, 100, "blue", 760, 250);
     ball = new circle("green", 5);
+    score = new score(myGameArea.canvas.width / 2, 60, 0, 0);
+    //Rx.Observable.interval(1)
+    //    .map(() => barRight.y)
+    //    .distinctUntilChanged().subscribe(() => console.log(barRight.y));
     //ball.speedX = 4;
     //ball.speedY = 3;
 }
@@ -44,6 +61,23 @@ function component(width, height, color, x, y) {
     }
 }
 
+function score(x, y,scoreLeft,scoreRight) {
+    //this.width = width;
+    //this.height = height;
+    this.scoreLeft = scoreLeft;
+    this.scoreRight = scoreRight;
+    this.x = x;
+    this.y = y;
+    this.update = function(){
+        ctx = myGameArea.context;
+        //ctx.fillStyle = color;
+        ctx.font="50px Georgia";
+        var txt = this.scoreLeft.toString() + ":" + this.scoreRight.toString();
+        ctx.fillText(txt ,this.x - ctx.measureText(txt).width / 2,this.y);
+    }
+}
+
+
 //making ball
 function circle(color, radius) {
     this.radius = radius;
@@ -66,6 +100,11 @@ function circle(color, radius) {
 
 //main loop
 function updateGameArea() {
+    //document.write("XD");
+    //console.log(barRight.x);
+    //console.log(barRight.y);
+    //console.log(barLeft.x);
+    //console.log(barRight.y);
     myGameArea.clear();
     //if (myGameArea.keys[37]) {barLeft.x -= 1; }
     // register up arrow
@@ -74,9 +113,13 @@ function updateGameArea() {
     //if (myGameArea.keys[39]){barLeft.x += 1; }
     // register down arrow
     if (myGameArea.keys[40]){barRight.y += 4; }
+    if (barRight.y < 0) {barRight.y = 0; }
+    if (barRight.y > myGameArea.canvas.height - barRight.height) {barRight.y = myGameArea.canvas.height - barRight.height; }
     barRight.update();
     if (myGameArea.keys[87]) {barLeft.y -= 4; }
     if (myGameArea.keys[83]){barLeft.y += 4; }
+    if (barLeft.y < 0) {barLeft.y = 0; }
+    if (barLeft.y > myGameArea.canvas.height - barLeft.height) {barLeft.y = myGameArea.canvas.height - barLeft.height; }
     barLeft.update();
 
     //hitting the arena
@@ -108,4 +151,5 @@ function updateGameArea() {
     ball.x += ball.speedX;
     ball.y += ball.speedY;
     ball.update();
+    score.update();
 }
