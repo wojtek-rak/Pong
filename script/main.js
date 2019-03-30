@@ -1,4 +1,8 @@
-var speedOfBars = 12;
+var fps = 100;
+var gameSpeedIndex = 6;
+var fpsReal = 1000 / fps;
+var speedOfBars = 13 / fps * gameSpeedIndex;
+var speedOfBall = 10 / fps * gameSpeedIndex;
 var barLeft;
 var barRight;
 var ball;
@@ -9,6 +13,7 @@ var paused = false;
 var pauseKeyUp = false;
 var pauseStart = false;
 var counter = 0;
+var lastUpdate = Date.now();
 
 function startGame() {
 
@@ -40,7 +45,7 @@ var myGameArea = {
         this.canvas.height = 600;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = setInterval(updateGameArea, fpsReal);
         this.intervalPause = setInterval(function() {
             // Will only run once
             clearInterval(this.intervalPause);
@@ -93,13 +98,13 @@ function circle(color, radius, startSiteRight) {
     this.setStartPos = function (startSiteRight) {
         if(startSiteRight){
             this.x = myGameArea.canvas.width * 3 / 4 - radius / 2;
-            this.speedX = -10;
-            this.speedY = Math.random() * 5;
+            this.speedX = -speedOfBall;
+            this.speedY = Math.random() * 5 / fps * gameSpeedIndex;
         }
         else{
             this.x = myGameArea.canvas.width  / 4 - radius / 2;
-            this.speedX = 10;
-            this.speedY = Math.random() * 5;
+            this.speedX = speedOfBall;
+            this.speedY = Math.random() * 5 / fps * gameSpeedIndex;
         }
     }
     this.setStartPos(startSiteRight);
@@ -156,17 +161,21 @@ function resetGame(startSiteRight) {
 }
 //main loop
 function updateGameArea() {
+    var now = Date.now();
+    var dt = now - lastUpdate;
+    lastUpdate = now;
+    console.log(dt);
     myGameArea.clear();
     // register up arrow
-    if (myGameArea.keys[38]) {barRight.y -= speedOfBars; }
+    if (myGameArea.keys[38]) {barRight.y -= speedOfBars * dt; }
     // right arrow
     // register down arrow
-    if (myGameArea.keys[40]){barRight.y += speedOfBars; }
+    if (myGameArea.keys[40]){barRight.y += speedOfBars * dt; }
     if (barRight.y < 0) {barRight.y = 0; }
     if (barRight.y > myGameArea.canvas.height - barRight.height) {barRight.y = myGameArea.canvas.height - barRight.height; }
     barRight.update();
-    if (myGameArea.keys[87]) {barLeft.y -= speedOfBars; }
-    if (myGameArea.keys[83]){barLeft.y += speedOfBars; }
+    if (myGameArea.keys[87]) {barLeft.y -= speedOfBars * dt; }
+    if (myGameArea.keys[83]){barLeft.y += speedOfBars * dt; }
     if (barLeft.y < 0) {barLeft.y = 0; }
     if (barLeft.y > myGameArea.canvas.height - barLeft.height) {barLeft.y = myGameArea.canvas.height - barLeft.height; }
     barLeft.update();
@@ -178,11 +187,10 @@ function updateGameArea() {
 
     if(ball.x + ball.radius > barRight.x){
         if(ball.y > barRight.y && ball.y < barRight.y + barRight.height && ball.x + ball.radius < barRight.x
-            + Math.abs(ball.speedX))
+            + Math.abs(ball.speedX  * dt))
         {
             ball.speedX = Math.abs(ball.speedX) * (-1);
-            ball.speedY =( (ball.y - barRight.y ) - (barRight.height / 2) ) / 3;
-            //console.log(ball.speedY);
+            ball.speedY =( (ball.y - barRight.y ) - (barRight.height / 2) ) / 3 / fps * gameSpeedIndex;
         }
         //bouncing off top and bottom right bar
         else if(ball.y + ball.radius > barRight.y && ball.y - ball.radius < barRight.y + barRight.height) {
@@ -192,10 +200,10 @@ function updateGameArea() {
     };
     if(ball.x - ball.radius < barLeft.x + barLeft.width){
         if(ball.y > barLeft.y && ball.y < barLeft.y + barLeft.height && ball.x - ball.radius > barLeft.x +barLeft.width
-            - Math.abs(ball.speedX))
+            - Math.abs(ball.speedX * dt))
         {
             ball.speedX = Math.abs(ball.speedX);
-            ball.speedY =( (ball.y - barLeft.y ) - (barLeft.height / 2) ) / 3;
+            ball.speedY =( (ball.y - barLeft.y ) - (barLeft.height / 2) ) / 3 / fps * gameSpeedIndex;
         }
         //bouncing off top and bottom left bar
         else if(ball.y + ball.radius > barLeft.y && ball.y - ball.radius < barLeft.y + barLeft.height) {
@@ -203,9 +211,10 @@ function updateGameArea() {
             if(ball.y > barLeft.y + barLeft.height / 2) ball.speedY = Math.abs(ball.speedY);
         }
     };
+
     //change position of the ball
-    ball.x += ball.speedX;
-    ball.y += ball.speedY;
+    ball.x += ball.speedX * dt;
+    ball.y += ball.speedY * dt;
     ball.update();
     if(ball.x > myGameArea.canvas.width - 10) {
         score.scoreLeft += 1;
