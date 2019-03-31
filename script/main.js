@@ -14,7 +14,8 @@ var pauseKeyUp = false;
 var pauseStart = false;
 var counter = 0;
 var lastUpdate = Date.now();
-
+var lastDT = 10
+var accDT = 10;
 function startGame() {
 
     myGameArea.start();
@@ -99,7 +100,11 @@ function circle(color, radius, startSiteRight) {
         if(startSiteRight){
             this.x = myGameArea.canvas.width * 3 / 4 - radius / 2;
             this.speedX = -speedOfBall;
-            this.speedY = Math.random() * 5 / fps * gameSpeedIndex;
+            //this.speedY = Math.random() * 5 / fps * gameSpeedIndex;
+            //TESTING
+            //this.speedY = 5 / fps * gameSpeedIndex;
+            //this.y = 0;
+            //this.x = myGameArea.canvas.width * 3 / 4 - radius / 2 -5;
         }
         else{
             this.x = myGameArea.canvas.width  / 4 - radius / 2;
@@ -161,10 +166,12 @@ function resetGame(startSiteRight) {
 }
 //main loop
 function updateGameArea() {
+    lastDT = accDT;
     var now = Date.now();
     var dt = now - lastUpdate;
     lastUpdate = now;
     console.log(dt);
+    accDT = dt;
     myGameArea.clear();
     // register up arrow
     if (myGameArea.keys[38]) {barRight.y -= speedOfBars * dt; }
@@ -187,7 +194,7 @@ function updateGameArea() {
 
     if(ball.x + ball.radius > barRight.x){
         if(ball.y > barRight.y && ball.y < barRight.y + barRight.height && ball.x + ball.radius < barRight.x
-            + Math.abs(ball.speedX  * dt))
+            + Math.abs(ball.speedX  * lastDT))
         {
             ball.speedX = Math.abs(ball.speedX) * (-1);
             ball.speedY =( (ball.y - barRight.y ) - (barRight.height / 2) ) / 3 / fps * gameSpeedIndex;
@@ -200,7 +207,7 @@ function updateGameArea() {
     };
     if(ball.x - ball.radius < barLeft.x + barLeft.width){
         if(ball.y > barLeft.y && ball.y < barLeft.y + barLeft.height && ball.x - ball.radius > barLeft.x +barLeft.width
-            - Math.abs(ball.speedX * dt))
+            - Math.abs(ball.speedX * lastDT))
         {
             ball.speedX = Math.abs(ball.speedX);
             ball.speedY =( (ball.y - barLeft.y ) - (barLeft.height / 2) ) / 3 / fps * gameSpeedIndex;
